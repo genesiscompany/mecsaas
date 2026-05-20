@@ -26,7 +26,7 @@ const navItems = [
   },
   { href: "/oficina/receitas", label: "Receitas", icon: TrendingUp },
   { href: "/oficina/despesas", label: "Despesas", icon: TrendingDown },
-  { href: "/oficina/estoque", label: "Estoque", icon: Package },
+  { href: "/oficina/estoque", label: "Estoque e Serviços", icon: Package },
   {
     href: "/oficina/ordens-servico",
     label: "Ordens de Serviço",
