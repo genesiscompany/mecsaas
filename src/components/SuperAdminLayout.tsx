@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,8 @@ import {
   LogOut,
   Repeat,
   ShieldCheck,
+  Menu,
+  X,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -28,21 +31,44 @@ export default function SuperAdminLayout({
 }) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const currentPage = navItems.find((item) => item.href === location);
 
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="flex w-64 flex-col bg-gradient-to-b from-gray-900 to-gray-800">
-        <div className="px-4 py-4">
-          <img
-            src="/logo.png"
-            alt="macSaas.com.br"
-            className="h-10 object-contain"
-          />
-          <div className="mt-1 flex items-center gap-1 px-1 text-xs text-gray-400">
-            <ShieldCheck className="h-3 w-3" />
-            Super Admin
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-gradient-to-b from-gray-900 to-gray-800 transition-transform duration-200 md:relative md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-4">
+          <div>
+            <img
+              src="/logo.png"
+              alt="macSaas.com.br"
+              className="h-10 object-contain"
+            />
+            <div className="mt-1 flex items-center gap-1 px-1 text-xs text-gray-400">
+              <ShieldCheck className="h-3 w-3" />
+              Super Admin
+            </div>
           </div>
+          <button
+            className="rounded p-1 text-gray-400 hover:text-white md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
         <ScrollArea className="flex-1 px-3">
           <nav className="space-y-1">
@@ -51,6 +77,7 @@ export default function SuperAdminLayout({
               return (
                 <Link key={item.href} href={item.href}>
                   <button
+                    onClick={() => setSidebarOpen(false)}
                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all ${
                       active
                         ? "bg-blue-600 font-medium text-white shadow-lg shadow-blue-600/30"
@@ -96,7 +123,19 @@ export default function SuperAdminLayout({
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
-        <div className="p-8">{children}</div>
+        {/* Mobile header */}
+        <div className="sticky top-0 z-30 flex items-center gap-3 border-b bg-white px-4 py-3 md:hidden">
+          <button
+            className="rounded-lg p-1.5 text-gray-600 hover:bg-gray-100"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <span className="text-sm font-semibold text-gray-800">
+            {currentPage?.label ?? "Super Admin"}
+          </span>
+        </div>
+        <div className="p-4 md:p-8">{children}</div>
       </main>
     </div>
   );

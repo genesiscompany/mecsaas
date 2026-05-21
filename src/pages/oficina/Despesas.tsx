@@ -124,9 +124,9 @@ export default function Despesas() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Despesas</h1>
+          <h1 className="text-2xl font-bold md:text-3xl">Despesas</h1>
           <p className="text-muted-foreground">
             Total: {formatCurrency(total)}
           </p>
@@ -225,12 +225,13 @@ export default function Despesas() {
               Nenhuma despesa registrada
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>
                   <TableHead>Descrição</TableHead>
-                  <TableHead>Categoria</TableHead>
+                  <TableHead className="hidden sm:table-cell">Categoria</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -242,7 +243,7 @@ export default function Despesas() {
                     <TableCell className="font-medium">
                       {d.descricao}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       {DESPESA_CATEGORIAS[d.categoria]}
                     </TableCell>
                     <TableCell className="text-right text-red-600">
@@ -268,6 +269,7 @@ export default function Despesas() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
