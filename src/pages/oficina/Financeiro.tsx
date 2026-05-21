@@ -179,13 +179,13 @@ export default function Financeiro() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Financeiro</h1>
+      <h1 className="text-2xl font-bold md:text-3xl">Financeiro</h1>
 
       <Tabs defaultValue="receber">
-        <TabsList>
-          <TabsTrigger value="receber">Contas a Receber</TabsTrigger>
-          <TabsTrigger value="pagar">Contas a Pagar</TabsTrigger>
-          <TabsTrigger value="caixa">Caixa Diário</TabsTrigger>
+        <TabsList className="w-full justify-start overflow-x-auto">
+          <TabsTrigger value="receber" className="text-xs sm:text-sm">Contas a Receber</TabsTrigger>
+          <TabsTrigger value="pagar" className="text-xs sm:text-sm">Contas a Pagar</TabsTrigger>
+          <TabsTrigger value="caixa" className="text-xs sm:text-sm">Caixa Diário</TabsTrigger>
         </TabsList>
 
         {/* Contas a Receber */}
@@ -276,12 +276,13 @@ export default function Financeiro() {
                   Nenhuma conta a receber
                 </p>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Cliente</TableHead>
                       <TableHead>Descrição</TableHead>
-                      <TableHead>Vencimento</TableHead>
+                      <TableHead className="hidden sm:table-cell">Vencimento</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                       <TableHead>Pago</TableHead>
                     </TableRow>
@@ -293,7 +294,7 @@ export default function Financeiro() {
                           {clienteMap[cr.clienteId] ?? "—"}
                         </TableCell>
                         <TableCell>{cr.descricao}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           {formatDate(cr.dataVencimento)}
                         </TableCell>
                         <TableCell className="text-right">
@@ -314,6 +315,7 @@ export default function Financeiro() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -407,12 +409,13 @@ export default function Financeiro() {
                   Nenhuma conta a pagar
                 </p>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Fornecedor</TableHead>
                       <TableHead>Descrição</TableHead>
-                      <TableHead>Vencimento</TableHead>
+                      <TableHead className="hidden sm:table-cell">Vencimento</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                       <TableHead>Pago</TableHead>
                     </TableRow>
@@ -426,7 +429,7 @@ export default function Financeiro() {
                             : "—"}
                         </TableCell>
                         <TableCell>{cp.descricao}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           {formatDate(cp.dataVencimento)}
                         </TableCell>
                         <TableCell className="text-right">
@@ -447,6 +450,7 @@ export default function Financeiro() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -455,10 +459,10 @@ export default function Financeiro() {
         {/* Caixa Diário */}
         <TabsContent value="caixa">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle>Caixa Diário</CardTitle>
-                <div className="mt-2 flex items-center gap-4 text-sm">
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs sm:gap-4 sm:text-sm">
                   <span className="text-green-600">
                     Entradas: {formatCurrency(totalEntradas)}
                   </span>
@@ -576,12 +580,13 @@ export default function Financeiro() {
                   Nenhum lançamento nesta data
                 </p>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Tipo</TableHead>
                       <TableHead>Descrição</TableHead>
-                      <TableHead>Pagamento</TableHead>
+                      <TableHead className="hidden sm:table-cell">Pagamento</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -600,7 +605,7 @@ export default function Financeiro() {
                           </Badge>
                         </TableCell>
                         <TableCell>{c.descricao}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           {FORMAS_PAGAMENTO[c.formaPagamento]}
                         </TableCell>
                         <TableCell
@@ -612,6 +617,7 @@ export default function Financeiro() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>

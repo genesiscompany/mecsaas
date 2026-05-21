@@ -325,8 +325,8 @@ export default function OrdensServico() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Ordens de Serviço</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold md:text-3xl">Ordens de Serviço</h1>
         <Dialog
           open={dialogOpen}
           onOpenChange={(o) => {
@@ -495,6 +495,7 @@ export default function OrdensServico() {
               Nenhuma ordem de serviço
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -599,6 +600,7 @@ export default function OrdensServico() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

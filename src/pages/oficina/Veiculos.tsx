@@ -108,8 +108,8 @@ export default function Veiculos() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Veículos</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold md:text-3xl">Veículos</h1>
         <Dialog
           open={dialogOpen}
           onOpenChange={(o) => {
@@ -213,14 +213,15 @@ export default function Veiculos() {
               Nenhum veículo cadastrado
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Placa</TableHead>
                   <TableHead>Marca</TableHead>
                   <TableHead>Modelo</TableHead>
-                  <TableHead>Ano</TableHead>
-                  <TableHead>Proprietário</TableHead>
+                  <TableHead className="hidden sm:table-cell">Ano</TableHead>
+                  <TableHead className="hidden md:table-cell">Proprietário</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -230,8 +231,8 @@ export default function Veiculos() {
                     <TableCell className="font-medium">{v.placa}</TableCell>
                     <TableCell>{v.marca}</TableCell>
                     <TableCell>{v.modelo}</TableCell>
-                    <TableCell>{v.ano}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">{v.ano}</TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {clienteMap[v.clienteId] ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
@@ -254,6 +255,7 @@ export default function Veiculos() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

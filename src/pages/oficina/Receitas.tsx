@@ -124,9 +124,9 @@ export default function Receitas() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Receitas</h1>
+          <h1 className="text-2xl font-bold md:text-3xl">Receitas</h1>
           <p className="text-muted-foreground">
             Total: {formatCurrency(total)}
           </p>
@@ -225,12 +225,13 @@ export default function Receitas() {
               Nenhuma receita registrada
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>
                   <TableHead>Descrição</TableHead>
-                  <TableHead>Categoria</TableHead>
+                  <TableHead className="hidden sm:table-cell">Categoria</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -242,7 +243,7 @@ export default function Receitas() {
                     <TableCell className="font-medium">
                       {r.descricao}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       {RECEITA_CATEGORIAS[r.categoria]}
                     </TableCell>
                     <TableCell className="text-right text-green-600">
@@ -268,6 +269,7 @@ export default function Receitas() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

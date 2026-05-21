@@ -175,7 +175,7 @@ export default function OficinaDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold md:text-3xl">Dashboard</h1>
         <p className="text-muted-foreground">
           Visão geral da sua oficina
         </p>
@@ -191,9 +191,9 @@ export default function OficinaDashboard() {
         </CardHeader>
         <CardContent>
           {planoAtual ? (
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-lg font-bold">{planoAtual.nome} — {formatCurrency(planoAtual.valor)}/{planoAtual.periodicidade}</p>
+                <p className="text-base font-bold sm:text-lg">{planoAtual.nome} — {formatCurrency(planoAtual.valor)}/{planoAtual.periodicidade}</p>
               </div>
               <div className="flex items-center gap-2">
                 {assinatura ? (
@@ -386,20 +386,20 @@ export default function OficinaDashboard() {
               {osRecentes.map((os) => (
                 <div
                   key={os.id}
-                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                  className="flex flex-col gap-2 rounded-lg border p-3 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between sm:p-4"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+                  <div className="flex items-center gap-3">
+                    <div className="hidden h-10 w-10 items-center justify-center rounded-lg bg-blue-50 sm:flex">
                       <FileText className="h-5 w-5 text-blue-600" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <span className="font-semibold">OS #{os.numero}</span>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="truncate text-sm text-muted-foreground">
                         {os.descricaoServico}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <span className="font-semibold">
                       {formatCurrency(os.valor)}
                     </span>

@@ -96,8 +96,8 @@ export default function Fornecedores() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Fornecedores</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold md:text-3xl">Fornecedores</h1>
         <Dialog
           open={dialogOpen}
           onOpenChange={(o) => {
@@ -176,13 +176,14 @@ export default function Fornecedores() {
               Nenhum fornecedor cadastrado
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>CNPJ</TableHead>
                   <TableHead>Telefone</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead className="hidden md:table-cell">Email</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -192,7 +193,7 @@ export default function Fornecedores() {
                     <TableCell className="font-medium">{f.nome}</TableCell>
                     <TableCell>{f.cnpj}</TableCell>
                     <TableCell>{f.telefone}</TableCell>
-                    <TableCell>{f.email || "—"}</TableCell>
+                    <TableCell className="hidden md:table-cell">{f.email || "—"}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
@@ -213,6 +214,7 @@ export default function Fornecedores() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

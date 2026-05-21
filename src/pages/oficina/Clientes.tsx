@@ -92,8 +92,8 @@ export default function Clientes() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Clientes</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold md:text-3xl">Clientes</h1>
         <Dialog
           open={dialogOpen}
           onOpenChange={(o) => {
@@ -171,13 +171,14 @@ export default function Clientes() {
               Nenhum cliente cadastrado
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Telefone</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Endereço</TableHead>
+                  <TableHead className="hidden md:table-cell">Email</TableHead>
+                  <TableHead className="hidden lg:table-cell">Endereço</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -186,8 +187,8 @@ export default function Clientes() {
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">{c.nome}</TableCell>
                     <TableCell>{c.telefone}</TableCell>
-                    <TableCell>{c.email || "—"}</TableCell>
-                    <TableCell>{c.endereco || "—"}</TableCell>
+                    <TableCell className="hidden md:table-cell">{c.email || "—"}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{c.endereco || "—"}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
@@ -208,6 +209,7 @@ export default function Clientes() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

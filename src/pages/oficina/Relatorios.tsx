@@ -100,7 +100,7 @@ export default function OficinaRelatorios() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Relatórios</h1>
+      <h1 className="text-2xl font-bold md:text-3xl">Relatórios</h1>
 
       <div className="flex flex-wrap gap-4">
         <div className="space-y-2">
@@ -163,10 +163,10 @@ export default function OficinaRelatorios() {
       </div>
 
       <Tabs defaultValue="faturamento">
-        <TabsList>
-          <TabsTrigger value="faturamento">Faturamento</TabsTrigger>
-          <TabsTrigger value="despesas">Despesas</TabsTrigger>
-          <TabsTrigger value="servicos">Serviços</TabsTrigger>
+        <TabsList className="w-full justify-start overflow-x-auto">
+          <TabsTrigger value="faturamento" className="text-xs sm:text-sm">Faturamento</TabsTrigger>
+          <TabsTrigger value="despesas" className="text-xs sm:text-sm">Despesas</TabsTrigger>
+          <TabsTrigger value="servicos" className="text-xs sm:text-sm">Serviços</TabsTrigger>
         </TabsList>
 
         <TabsContent value="faturamento">
@@ -257,7 +257,7 @@ export default function OficinaRelatorios() {
               <CardTitle>Serviços Realizados</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="mb-4 grid grid-cols-3 gap-4">
+              <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="rounded-lg border p-4 text-center">
                   <div className="text-2xl font-bold">{ordens.length}</div>
                   <div className="text-sm text-muted-foreground">
@@ -286,6 +286,7 @@ export default function OficinaRelatorios() {
                 </div>
               </div>
               {ordens.length > 0 ? (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -310,6 +311,7 @@ export default function OficinaRelatorios() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               ) : (
                 <p className="py-4 text-center text-muted-foreground">
                   Sem ordens para o período

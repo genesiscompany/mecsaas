@@ -149,8 +149,8 @@ export default function Estoque() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Estoque e Serviços</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold md:text-3xl">Estoque e Serviços</h1>
         <Dialog
           open={dialogOpen}
           onOpenChange={(o) => {
@@ -292,6 +292,7 @@ export default function Estoque() {
               Nenhum item no estoque
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -369,6 +370,7 @@ export default function Estoque() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
