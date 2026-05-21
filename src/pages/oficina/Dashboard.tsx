@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -13,6 +13,9 @@ import {
   getDespesas,
   getEstoque,
   getClientes,
+  getOficina,
+  getPlanos,
+  getAssinaturaAtiva,
 } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -23,8 +26,14 @@ import {
   Users,
   Package,
   AlertTriangle,
+  CreditCard,
+  CheckCircle,
+  Clock,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import type { Plano } from "@/lib/types";
 import { OS_STATUS_LABELS, RECEITA_CATEGORIAS, type ReceitaCategoria } from "@/lib/types";
 import {
   BarChart,
@@ -53,6 +62,42 @@ export default function OficinaDashboard() {
   const osRecentes = getOrdensServico(oficinaId).slice(-5).reverse();
 
   const estoqueBaixo = estoque.filter((i) => i.quantidade <= i.estoqueMinimo);
+
+  const oficina = getOficina(oficinaId);
+  const planos = getPlanos();
+  const planoAtual = planos.find((p) => p.id === oficina?.planoId);
+  const assinatura = getAssinaturaAtiva(oficinaId);
+  const [assinando, setAssinando] = useState(false);
+
+  const handleAssinar = useCallback(async (plano: Plano) => {
+    if (!oficina) return;
+    setAssinando(true);
+    try {
+      const resp = await fetch("/api/create-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          oficina_id: oficina.id,
+          plano_id: plano.id,
+          plano_nome: plano.nome,
+          valor: plano.valor,
+          payer_email: oficina.email || oficina.adminEmail,
+          oficina_nome: oficina.nome,
+        }),
+      });
+      const data = await resp.json();
+      if (data.init_point) {
+        window.open(data.init_point, "_blank");
+        toast.success("Redirecionando para o Mercado Pago...");
+      } else {
+        toast.error(data.error || "Erro ao criar assinatura");
+      }
+    } catch {
+      toast.error("Erro de conexão. Tente novamente.");
+    } finally {
+      setAssinando(false);
+    }
+  }, [oficina]);
 
   const receitasPorCategoria = useMemo(() => {
     const map = new Map<ReceitaCategoria, number>();
@@ -135,6 +180,56 @@ export default function OficinaDashboard() {
           Visão geral da sua oficina
         </p>
       </div>
+
+      {/* Plano Card */}
+      <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-white">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CreditCard className="h-5 w-5 text-emerald-600" />
+            {planoAtual ? "Seu Plano" : "Planos Disponíveis"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {planoAtual ? (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-bold">{planoAtual.nome} — {formatCurrency(planoAtual.valor)}/{planoAtual.periodicidade}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {assinatura ? (
+                  <Badge variant={assinatura.status === "authorized" ? "default" : "secondary"} className="gap-1">
+                    {assinatura.status === "authorized" ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                    {assinatura.status === "authorized" ? "Ativa" : "Pendente"}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="gap-1">
+                    <Clock className="h-3 w-3" />
+                    Sem assinatura
+                  </Badge>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {planos.map((plano) => (
+                <div key={plano.id} className="rounded-lg border border-gray-200 p-4 text-center transition-all hover:border-emerald-400 hover:shadow">
+                  <p className="font-bold text-lg">{plano.nome}</p>
+                  <p className="text-2xl font-bold text-emerald-600">{formatCurrency(plano.valor)}</p>
+                  <p className="text-xs text-muted-foreground mb-3">/{plano.periodicidade}</p>
+                  <Button
+                    size="sm"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => handleAssinar(plano)}
+                    disabled={assinando}
+                  >
+                    {assinando ? "Processando..." : "Assinar"}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Stat Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

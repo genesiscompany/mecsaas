@@ -101,32 +101,25 @@ export const DESPESA_CATEGORIAS: Record<DespesaCategoria, string> = {
   massas_primers: "Massas e Primers",
 };
 
-export type EstoqueCategoria =
-  | "pneus"
-  | "pecas"
-  | "oleo"
-  | "filtros"
-  | "tintas"
-  | "verniz"
-  | "lixas"
-  | "massas";
+export type EstoqueCategoria = string;
 
-export const ESTOQUE_CATEGORIAS: Record<EstoqueCategoria, string> = {
-  pneus: "Pneus",
-  pecas: "Peças",
-  oleo: "Óleo",
-  filtros: "Filtros",
-  tintas: "Tintas",
-  verniz: "Verniz",
-  lixas: "Lixas",
-  massas: "Massas",
-};
+export const ESTOQUE_CATEGORIAS_PADRAO: string[] = [
+  "Pneus",
+  "Peças",
+  "Óleo",
+  "Filtros",
+  "Tintas",
+  "Verniz",
+  "Lixas",
+  "Massas",
+  "Serviços",
+];
 
 export interface ItemEstoque {
   id: string;
   oficinaId: string;
   nome: string;
-  categoria: EstoqueCategoria;
+  categoria: string;
   quantidade: number;
   precoUnitario: number;
   estoqueMinimo: number;

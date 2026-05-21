@@ -110,12 +110,27 @@ function mapDespesaFromDb(row: Record<string, unknown>): Despesa {
   };
 }
 
+const LEGACY_CATEGORY_MAP: Record<string, string> = {
+  pecas: "Peças",
+  pneus: "Pneus",
+  oleo: "Óleo",
+  filtros: "Filtros",
+  tintas: "Tintas",
+  verniz: "Verniz",
+  lixas_abrasivos: "Lixas",
+  massas_primers: "Massas",
+};
+
+function normalizeCategoriaEstoque(cat: string): string {
+  return LEGACY_CATEGORY_MAP[cat] ?? cat;
+}
+
 function mapEstoqueFromDb(row: Record<string, unknown>): ItemEstoque {
   return {
     id: row.id as string,
     oficinaId: row.oficina_id as string,
     nome: row.nome as string,
-    categoria: row.categoria as ItemEstoque["categoria"],
+    categoria: normalizeCategoriaEstoque(row.categoria as string),
     quantidade: Number(row.quantidade),
     precoUnitario: Number(row.preco_unitario),
     estoqueMinimo: Number(row.estoque_minimo),

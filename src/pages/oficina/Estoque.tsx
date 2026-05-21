@@ -42,9 +42,8 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import { Plus, Pencil, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import {
-  ESTOQUE_CATEGORIAS,
+  ESTOQUE_CATEGORIAS_PADRAO,
   type ItemEstoque,
-  type EstoqueCategoria,
 } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -63,11 +62,17 @@ export default function Estoque() {
 
   const [form, setForm] = useState({
     nome: "",
-    categoria: "pecas" as EstoqueCategoria,
+    categoria: "Peças",
     quantidade: "",
     precoUnitario: "",
     estoqueMinimo: "",
   });
+  const [novaCategoria, setNovaCategoria] = useState("");
+  const [showNovaCategoria, setShowNovaCategoria] = useState(false);
+
+  // Build dynamic categories list from defaults + existing items
+  const categoriasExistentes = [...new Set(estoque.map((e) => e.categoria))];
+  const todasCategorias = [...new Set([...ESTOQUE_CATEGORIAS_PADRAO, ...categoriasExistentes])].sort();
 
   const refresh = useCallback(
     () => setEstoque(getEstoque(oficinaId)),
@@ -77,12 +82,14 @@ export default function Estoque() {
   function resetForm() {
     setForm({
       nome: "",
-      categoria: "pecas",
+      categoria: "Peças",
       quantidade: "",
       precoUnitario: "",
       estoqueMinimo: "",
     });
     setEditing(null);
+    setNovaCategoria("");
+    setShowNovaCategoria(false);
   }
 
   function openEdit(item: ItemEstoque) {
@@ -143,7 +150,7 @@ export default function Estoque() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Estoque</h1>
+        <h1 className="text-3xl font-bold">Estoque e Serviços</h1>
         <Dialog
           open={dialogOpen}
           onOpenChange={(o) => {
@@ -176,26 +183,60 @@ export default function Estoque() {
               </div>
               <div className="space-y-2">
                 <Label>Categoria</Label>
-                <Select
-                  value={form.categoria}
-                  onValueChange={(v) =>
-                    setForm({
-                      ...form,
-                      categoria: v as EstoqueCategoria,
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(ESTOQUE_CATEGORIAS).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>
-                        {v}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {showNovaCategoria ? (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Nome da nova categoria"
+                      value={novaCategoria}
+                      onChange={(e) => setNovaCategoria(e.target.value)}
+                      autoFocus
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        if (novaCategoria.trim()) {
+                          setForm({ ...form, categoria: novaCategoria.trim() });
+                          setShowNovaCategoria(false);
+                        }
+                      }}
+                    >
+                      OK
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowNovaCategoria(false)}
+                    >
+                      X
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Select
+                      value={form.categoria}
+                      onValueChange={(v) => {
+                        if (v === "__nova__") {
+                          setShowNovaCategoria(true);
+                        } else {
+                          setForm({ ...form, categoria: v });
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="flex-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {todasCategorias.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="__nova__">+ Nova Categoria</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
@@ -276,7 +317,7 @@ export default function Estoque() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {ESTOQUE_CATEGORIAS[item.categoria]}
+                      {item.categoria}
                     </TableCell>
                     <TableCell className="text-right">
                       {item.quantidade}

@@ -42,9 +42,11 @@ import {
   createOrdemServico,
   updateOrdemServico,
   concluirOrdemServico,
+  createCliente,
+  createVeiculo,
 } from "@/lib/store";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Plus, CheckCircle2, XCircle, Play, MessageCircle, Printer } from "lucide-react";
+import { Plus, CheckCircle2, XCircle, Play, MessageCircle, Printer, UserPlus, CarFront } from "lucide-react";
 import {
   OS_STATUS_LABELS,
   type OrdemServico,
@@ -57,15 +59,22 @@ export default function OrdensServico() {
   const oficinaId = user?.oficinaId ?? "";
   const [ordens, setOrdens] = useState(() => getOrdensServico(oficinaId));
   const [dialogOpen, setDialogOpen] = useState(false);
-  const clientes = getClientes(oficinaId);
-  const veiculos = getVeiculos(oficinaId);
+  const [clientesList, setClientesList] = useState(() => getClientes(oficinaId));
+  const [veiculosList, setVeiculosList] = useState(() => getVeiculos(oficinaId));
   const estoque = getEstoque(oficinaId);
+
+  // Inline creation states
+  const [showNovoCliente, setShowNovoCliente] = useState(false);
+  const [novoClienteForm, setNovoClienteForm] = useState({ nome: "", telefone: "", email: "", endereco: "" });
+  const [showNovoVeiculo, setShowNovoVeiculo] = useState(false);
+  const [novoVeiculoForm, setNovoVeiculoForm] = useState({ marca: "", modelo: "", placa: "", ano: "" });
 
   const [form, setForm] = useState({
     clienteId: "",
     veiculoId: "",
     descricaoServico: "",
     valor: "",
+    valorServico: "",
     pecasUsadas: [] as { itemEstoqueId: string; quantidade: number }[],
   });
   const [pecaId, setPecaId] = useState("");
@@ -82,10 +91,48 @@ export default function OrdensServico() {
       veiculoId: "",
       descricaoServico: "",
       valor: "",
+      valorServico: "",
       pecasUsadas: [],
     });
     setPecaId("");
     setPecaQtd("1");
+    setShowNovoCliente(false);
+    setShowNovoVeiculo(false);
+    setNovoClienteForm({ nome: "", telefone: "", email: "", endereco: "" });
+    setNovoVeiculoForm({ marca: "", modelo: "", placa: "", ano: "" });
+  }
+
+  // Calculate total from parts + service value
+  function calcularTotal() {
+    const valorServico = parseFloat(form.valorServico) || 0;
+    const valorPecas = form.pecasUsadas.reduce((sum, p) => {
+      const item = estoque.find((e) => e.id === p.itemEstoqueId);
+      return sum + (item ? item.precoUnitario * p.quantidade : 0);
+    }, 0);
+    return valorServico + valorPecas;
+  }
+
+  function handleCriarCliente() {
+    if (!novoClienteForm.nome) return;
+    const novo = createCliente({ ...novoClienteForm, oficinaId });
+    setClientesList(getClientes(oficinaId));
+    setForm({ ...form, clienteId: novo.id });
+    setShowNovoCliente(false);
+    setNovoClienteForm({ nome: "", telefone: "", email: "", endereco: "" });
+  }
+
+  function handleCriarVeiculo() {
+    if (!novoVeiculoForm.placa || !form.clienteId) return;
+    const novo = createVeiculo({
+      ...novoVeiculoForm,
+      ano: parseInt(novoVeiculoForm.ano) || new Date().getFullYear(),
+      oficinaId,
+      clienteId: form.clienteId,
+    });
+    setVeiculosList(getVeiculos(oficinaId));
+    setForm({ ...form, veiculoId: novo.id });
+    setShowNovoVeiculo(false);
+    setNovoVeiculoForm({ marca: "", modelo: "", placa: "", ano: "" });
   }
 
   function addPeca() {
@@ -116,12 +163,13 @@ export default function OrdensServico() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const total = calcularTotal();
     createOrdemServico({
       oficinaId,
       clienteId: form.clienteId,
       veiculoId: form.veiculoId,
       descricaoServico: form.descricaoServico,
-      valor: parseFloat(form.valor),
+      valor: total,
       pecasUsadas: form.pecasUsadas,
       status: "aberta",
     });
@@ -141,10 +189,10 @@ export default function OrdensServico() {
   }
 
   const clienteMap = Object.fromEntries(
-    clientes.map((c) => [c.id, c]),
+    clientesList.map((c) => [c.id, c]),
   );
   const veiculoMap = Object.fromEntries(
-    veiculos.map((v) => [v.id, `${v.marca} ${v.modelo} - ${v.placa}`]),
+    veiculosList.map((v) => [v.id, `${v.marca} ${v.modelo} - ${v.placa}`]),
   );
 
   function imprimirTermica(os: OrdemServico) {
@@ -272,8 +320,8 @@ export default function OrdensServico() {
   }
 
   const veiculosFiltrados = form.clienteId
-    ? veiculos.filter((v) => v.clienteId === form.clienteId)
-    : veiculos;
+    ? veiculosList.filter((v) => v.clienteId === form.clienteId)
+    : veiculosList;
 
   return (
     <div className="space-y-6">
@@ -296,68 +344,84 @@ export default function OrdensServico() {
             <DialogHeader>
               <DialogTitle>Nova Ordem de Serviço</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+              {/* Cliente */}
               <div className="space-y-2">
-                <Label>Cliente</Label>
-                <Select
-                  value={form.clienteId}
-                  onValueChange={(v) =>
-                    setForm({ ...form, clienteId: v, veiculoId: "" })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clientes.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center justify-between">
+                  <Label>Cliente</Label>
+                  <Button type="button" variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setShowNovoCliente(!showNovoCliente)}>
+                    <UserPlus className="mr-1 h-3 w-3" />
+                    {showNovoCliente ? "Cancelar" : "Novo Cliente"}
+                  </Button>
+                </div>
+                {showNovoCliente ? (
+                  <div className="space-y-2 rounded-lg border bg-muted/50 p-3">
+                    <Input placeholder="Nome *" value={novoClienteForm.nome} onChange={(e) => setNovoClienteForm({ ...novoClienteForm, nome: e.target.value })} />
+                    <Input placeholder="Telefone" value={novoClienteForm.telefone} onChange={(e) => setNovoClienteForm({ ...novoClienteForm, telefone: e.target.value })} />
+                    <Button type="button" size="sm" className="w-full" onClick={handleCriarCliente} disabled={!novoClienteForm.nome}>
+                      Adicionar Cliente
+                    </Button>
+                  </div>
+                ) : (
+                  <Select value={form.clienteId} onValueChange={(v) => setForm({ ...form, clienteId: v, veiculoId: "" })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clientesList.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
+
+              {/* Veículo */}
               <div className="space-y-2">
-                <Label>Veículo</Label>
-                <Select
-                  value={form.veiculoId}
-                  onValueChange={(v) =>
-                    setForm({ ...form, veiculoId: v })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {veiculosFiltrados.map((v) => (
-                      <SelectItem key={v.id} value={v.id}>
-                        {v.marca} {v.modelo} - {v.placa}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center justify-between">
+                  <Label>Veículo</Label>
+                  {form.clienteId && (
+                    <Button type="button" variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setShowNovoVeiculo(!showNovoVeiculo)}>
+                      <CarFront className="mr-1 h-3 w-3" />
+                      {showNovoVeiculo ? "Cancelar" : "Novo Veículo"}
+                    </Button>
+                  )}
+                </div>
+                {showNovoVeiculo ? (
+                  <div className="space-y-2 rounded-lg border bg-muted/50 p-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input placeholder="Marca *" value={novoVeiculoForm.marca} onChange={(e) => setNovoVeiculoForm({ ...novoVeiculoForm, marca: e.target.value })} />
+                      <Input placeholder="Modelo *" value={novoVeiculoForm.modelo} onChange={(e) => setNovoVeiculoForm({ ...novoVeiculoForm, modelo: e.target.value })} />
+                      <Input placeholder="Placa *" value={novoVeiculoForm.placa} onChange={(e) => setNovoVeiculoForm({ ...novoVeiculoForm, placa: e.target.value })} />
+                      <Input placeholder="Ano" type="number" value={novoVeiculoForm.ano} onChange={(e) => setNovoVeiculoForm({ ...novoVeiculoForm, ano: e.target.value })} />
+                    </div>
+                    <Button type="button" size="sm" className="w-full" onClick={handleCriarVeiculo} disabled={!novoVeiculoForm.placa}>
+                      Adicionar Veículo
+                    </Button>
+                  </div>
+                ) : (
+                  <Select value={form.veiculoId} onValueChange={(v) => setForm({ ...form, veiculoId: v })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {veiculosFiltrados.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>{v.marca} {v.modelo} - {v.placa}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
+
               <div className="space-y-2">
                 <Label>Descrição do Serviço</Label>
-                <Textarea
-                  value={form.descricaoServico}
-                  onChange={(e) =>
-                    setForm({ ...form, descricaoServico: e.target.value })
-                  }
-                  required
-                />
+                <Textarea value={form.descricaoServico} onChange={(e) => setForm({ ...form, descricaoServico: e.target.value })} required />
               </div>
+
+              {/* Valor do Serviço (mão de obra) */}
               <div className="space-y-2">
-                <Label>Valor (R$)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={form.valor}
-                  onChange={(e) =>
-                    setForm({ ...form, valor: e.target.value })
-                  }
-                  required
-                />
+                <Label>Valor do Serviço / Mão de Obra (R$)</Label>
+                <Input type="number" step="0.01" value={form.valorServico} onChange={(e) => setForm({ ...form, valorServico: e.target.value })} placeholder="0.00" />
               </div>
 
               {/* Peças */}
@@ -371,42 +435,23 @@ export default function OrdensServico() {
                     <SelectContent>
                       {estoque.map((e) => (
                         <SelectItem key={e.id} value={e.id}>
-                          {e.nome} (disp: {e.quantidade})
+                          {e.nome} ({formatCurrency(e.precoUnitario)}) - disp: {e.quantidade}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={pecaQtd}
-                    onChange={(e) => setPecaQtd(e.target.value)}
-                    className="w-20"
-                  />
-                  <Button type="button" variant="outline" onClick={addPeca}>
-                    +
-                  </Button>
+                  <Input type="number" min="1" value={pecaQtd} onChange={(e) => setPecaQtd(e.target.value)} className="w-20" />
+                  <Button type="button" variant="outline" onClick={addPeca}>+</Button>
                 </div>
                 {form.pecasUsadas.length > 0 && (
                   <ul className="mt-2 space-y-1">
                     {form.pecasUsadas.map((p, i) => {
-                      const item = estoque.find(
-                        (e) => e.id === p.itemEstoqueId,
-                      );
+                      const item = estoque.find((e) => e.id === p.itemEstoqueId);
+                      const subtotal = item ? item.precoUnitario * p.quantidade : 0;
                       return (
-                        <li
-                          key={i}
-                          className="flex items-center justify-between rounded bg-muted px-2 py-1 text-sm"
-                        >
-                          <span>
-                            {item?.nome} x{p.quantidade}
-                          </span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removePeca(i)}
-                          >
+                        <li key={i} className="flex items-center justify-between rounded bg-muted px-2 py-1 text-sm">
+                          <span>{item?.nome} x{p.quantidade} = {formatCurrency(subtotal)}</span>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => removePeca(i)}>
                             <XCircle className="h-3 w-3" />
                           </Button>
                         </li>
@@ -416,7 +461,23 @@ export default function OrdensServico() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full">
+              {/* Total automático */}
+              <div className="rounded-lg bg-emerald-50 p-3 border border-emerald-200">
+                <div className="flex justify-between text-sm text-emerald-700">
+                  <span>Serviço:</span>
+                  <span>{formatCurrency(parseFloat(form.valorServico) || 0)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-emerald-700">
+                  <span>Peças:</span>
+                  <span>{formatCurrency(form.pecasUsadas.reduce((sum, p) => { const item = estoque.find((e) => e.id === p.itemEstoqueId); return sum + (item ? item.precoUnitario * p.quantidade : 0); }, 0))}</span>
+                </div>
+                <div className="flex justify-between text-base font-bold text-emerald-800 border-t border-emerald-200 mt-1 pt-1">
+                  <span>TOTAL:</span>
+                  <span>{formatCurrency(calcularTotal())}</span>
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={!form.clienteId || !form.veiculoId || !form.descricaoServico}>
                 Criar OS
               </Button>
             </form>
